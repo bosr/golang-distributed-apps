@@ -14,6 +14,8 @@ import (
 )
 
 var (
+	url = "amqp://guest:guest@localhost:5672"
+
 	name     = flag.String("name", "sensor", "name of the sensor")
 	freq     = flag.Uint("freq", 5, "update frequency in cycles/sec")
 	max      = flag.Float64("max", 5., "max value for generated readings")
