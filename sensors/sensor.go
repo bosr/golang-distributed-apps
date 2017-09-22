@@ -64,6 +64,7 @@ func main() {
 			Timestamp: time.Now(),
 		}
 		buf.Reset()
+		enc = gob.NewEncoder(buf)
 		enc.Encode(reading)
 
 		msg := amqp.Publishing{
@@ -77,7 +78,7 @@ func main() {
 			false,          // immediate bool
 			msg,            // msg amqp.Publishing
 		)
-		log.Printf("Reading sent. Value: %v\n", value)
+		log.Printf("Reading sent. Value: %v\n", reading)
 	}
 }
 
