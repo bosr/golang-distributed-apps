@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"github.com/bosr/golang-distributed-apps/dto"
+	"github.com/bosr/golang-distributed-apps/qutils"
+	"github.com/streadway/amqp"
 )
 
 var (
@@ -31,6 +33,12 @@ var (
 func main() {
 	flag.Parse()
 
+	conn, ch := qutils.GetChannel(url)
+	defer conn.Close()
+	defer ch.Close()
+
+	dataQueue := qutils.GetQueue(*name, ch)
+
 	// 5 cycles/sec -> 200 ms/cycle
 	dur, _ := time.ParseDuration(strconv.Itoa(1000/int(*freq)) + "ms")
 	fmt.Println(dur)
@@ -43,10 +51,22 @@ func main() {
 		reading := dto.SensorMessage{
 			Name:      *name,
 			Value:     value,
-			Timestamp: time.Time(),
+			Timestamp: time.Now(),
 		}
 		buf.Reset()
 		enc.Encode(reading)
+
+		msg := amqp.Publishing{
+			Body: buf.Bytes(),
+		}
+
+		ch.Publish(
+			"",             // exchange string
+			dataQueue.Name, // key string
+			false,          // mandatoory bool: because we are sure it exists
+			false,          // immediate bool
+			msg,            // msg amqp.Publishing
+		)
 		log.Printf("Reading sent. Value: %v\n", value)
 	}
 }

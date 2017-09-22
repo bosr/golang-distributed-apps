@@ -11,14 +11,15 @@ import (
 // at the provided url
 func GetChannel(url string) (*amqp.Connection, *amqp.Channel) {
 	conn, err := amqp.Dial(url)
-	failOnError(err, "Failed to establish connection to message broker at %s", url)
+	failOnError(err, "Failed to establish connection to message broker")
 	ch, err := conn.Channel()
 	failOnError(err, "Failed to get channel for connection")
 
 	return conn, ch
 }
 
-func getQueue(name string, ch *amqp.Channel) *amqp.Queue {
+// GetQueue declares a queue named `name` on channel `ch`.
+func GetQueue(name string, ch *amqp.Channel) *amqp.Queue {
 	q, err := ch.QueueDeclare(
 		name,  // name string
 		false, // durable bool
