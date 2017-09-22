@@ -39,14 +39,13 @@ func main() {
 
 	dataQueue := qutils.GetQueue(*name, ch)
 
-	// declare the sensor queue on the registry queue and publish sensor name
-	sensorListQueue := qutils.GetQueue(qutils.SensorListQueue, ch)
+	// publish sensor name to amq.fanout exchange
 	msg := amqp.Publishing{Body: []byte(*name)}
 	ch.Publish(
-		"",                   // exchange string
-		sensorListQueue.Name, // key string
-		false,                // mandatory bool
-		false,                // immediate bool
+		"amq.fanout", // exchange string
+		"",           // key string
+		false,        // mandatory bool
+		false,        // immediate bool
 		msg,
 	)
 
