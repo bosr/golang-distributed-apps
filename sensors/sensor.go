@@ -39,9 +39,20 @@ func main() {
 
 	dataQueue := qutils.GetQueue(*name, ch)
 
+	// declare the sensor queue on the registry queue and publish sensor name
+	sensorListQueue := qutils.GetQueue(qutils.SensorListQueue, ch)
+	msg := amqp.Publishing{Body: []byte(*name)}
+	ch.Publish(
+		"",                   // exchange string
+		sensorListQueue.Name, // key string
+		false,                // mandatory bool
+		false,                // immediate bool
+		msg,
+	)
+
 	// 5 cycles/sec -> 200 ms/cycle
 	dur, _ := time.ParseDuration(strconv.Itoa(1000/int(*freq)) + "ms")
-	fmt.Println(dur)
+	fmt.Printf("Sending period: %v\n", dur)
 	signal := time.Tick(dur)
 	buf := new(bytes.Buffer)
 	enc := gob.NewEncoder(buf)

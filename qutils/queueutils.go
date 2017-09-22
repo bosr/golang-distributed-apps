@@ -7,6 +7,11 @@ import (
 	"github.com/streadway/amqp"
 )
 
+const (
+	// SensorListQueue is the name of the queue that acts as a registry for all sensor queues.
+	SensorListQueue = "SensorList"
+)
+
 // GetChannel returns a Connection and Channel to the broker
 // at the provided url
 func GetChannel(url string) (*amqp.Connection, *amqp.Channel) {
