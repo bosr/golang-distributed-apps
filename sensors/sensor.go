@@ -1,12 +1,16 @@
 package main
 
 import (
+	"bytes"
+	"encoding/gob"
 	"flag"
 	"fmt"
 	"log"
 	"math/rand"
 	"strconv"
 	"time"
+
+	"github.com/bosr/golang-distributed-apps/dto"
 )
 
 var (
@@ -29,9 +33,18 @@ func main() {
 	dur, _ := time.ParseDuration(strconv.Itoa(1000/int(*freq)) + "ms")
 	fmt.Println(dur)
 	signal := time.Tick(dur)
+	buf := new(bytes.Buffer)
+	enc := gob.NewEncoder(buf)
 
 	for range signal {
 		calcValue()
+		reading := dto.SensorMessage{
+			Name:      *name,
+			Value:     value,
+			Timestamp: time.Time(),
+		}
+		buf.Reset()
+		enc.Encode(reading)
 		log.Printf("Reading sent. Value: %v\n", value)
 	}
 }
