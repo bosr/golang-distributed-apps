@@ -12,6 +12,8 @@ const (
 	SensorListQueue = "SensorList"
 	// SensorDiscoveryExchange is the name of the exchange for broadcasting sensor names requests.
 	SensorDiscoveryExchange = "SensorDiscovery"
+	// PersistReadingsQueue is the name of the queue for persisting events
+	PersistReadingsQueue = "PersistReadings"
 )
 
 // GetChannel returns a Connection and Channel to the broker

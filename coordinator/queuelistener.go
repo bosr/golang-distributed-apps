@@ -23,10 +23,10 @@ type QueueListener struct {
 }
 
 // NewQueueListener returns a new QueueListener
-func NewQueueListener() *QueueListener {
+func NewQueueListener(ea *EventAggregator) *QueueListener {
 	ql := QueueListener{
 		sources: make(map[string]<-chan amqp.Delivery),
-		ea:      NewEventAggregator(),
+		ea:      ea,
 	}
 
 	ql.conn, ql.ch = qutils.GetChannel(url)
@@ -79,9 +79,11 @@ func (ql *QueueListener) ListenForNewSource() {
 
 	ql.DiscoverSensors()
 
+	fmt.Println("Listening for new sources.")
 	for msg := range msgs {
 		// new sensor has come online
 		fmt.Println("New source discovered.")
+		ql.ea.PublishEvent("DataSourceDiscovered", string(msg.Body))
 		sourceChan, _ := ql.ch.Consume(
 			string(msg.Body), // queue string,
 			"",               // consumer string,
