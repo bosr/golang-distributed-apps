@@ -34,6 +34,27 @@ func NewQueueListener() *QueueListener {
 	return &ql
 }
 
+// DiscoverSensors declares a new fanout exchange for broadcasting sensor name requests, and publishes an empty request, which is sufficient for them to reply.
+func (ql *QueueListener) DiscoverSensors() {
+	ql.ch.ExchangeDeclare(
+		qutils.SensorDiscoveryExchange, // name string,
+		"fanout",                       // kind string,
+		false,                          // durable bool,
+		false,                          // autoDelete bool,
+		false,                          // internal bool,
+		false,                          // noWait bool,
+		nil,                            // args amqp.Table,
+	)
+
+	ql.ch.Publish(
+		qutils.SensorDiscoveryExchange, // exchange string,
+		"",                // key string,
+		false,             // mandatory bool,
+		false,             // immediate bool,
+		amqp.Publishing{}, // msg. amqp.Publishing,
+	)
+}
+
 // ListenForNewSource does something right
 func (ql *QueueListener) ListenForNewSource() {
 	q := qutils.GetQueue("", ql.ch) // exchange will create the queue name for us
@@ -56,8 +77,11 @@ func (ql *QueueListener) ListenForNewSource() {
 		nil,    // args amqp.Table,
 	)
 
+	ql.DiscoverSensors()
+
 	for msg := range msgs {
 		// new sensor has come online
+		fmt.Println("New source discovered.")
 		sourceChan, _ := ql.ch.Consume(
 			string(msg.Body), // queue string,
 			"",               // consumer string,

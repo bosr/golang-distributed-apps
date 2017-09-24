@@ -10,6 +10,8 @@ import (
 const (
 	// SensorListQueue is the name of the queue that acts as a registry for all sensor queues.
 	SensorListQueue = "SensorList"
+	// SensorDiscoveryExchange is the name of the exchange for broadcasting sensor names requests.
+	SensorDiscoveryExchange = "SensorDiscovery"
 )
 
 // GetChannel returns a Connection and Channel to the broker

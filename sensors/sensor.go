@@ -40,14 +40,18 @@ func main() {
 	dataQueue := qutils.GetQueue(*name, ch)
 
 	// publish sensor name to amq.fanout exchange
-	msg := amqp.Publishing{Body: []byte(*name)}
-	ch.Publish(
-		"amq.fanout", // exchange string
-		"",           // key string
-		false,        // mandatory bool
-		false,        // immediate bool
-		msg,
+	publishQueueName(ch)
+
+	discoveryQueue := qutils.GetQueue("", ch)
+	ch.QueueBind(
+		discoveryQueue.Name, // name string,
+		"",                  // key string,
+		qutils.SensorDiscoveryExchange, // exchange string,
+		false, // noWait bool,
+		nil,   // args amqp.Table
 	)
+
+	go listenForDiscoverRequests(discoveryQueue.Name, ch)
 
 	// 5 cycles/sec -> 200 ms/cycle
 	dur, _ := time.ParseDuration(strconv.Itoa(1000/int(*freq)) + "ms")
@@ -94,4 +98,33 @@ func calcValue() {
 	}
 
 	value += r.Float64()*(maxStep-minStep) + minStep
+}
+
+func listenForDiscoverRequests(name string, ch *amqp.Channel) {
+	msgs, _ := ch.Consume(
+		name,  // queue string,
+		"",    // consumer string,
+		true,  // autoAck bool,
+		false, // exclusive bool,
+		false, // noLocal bool,
+		false, // noWait bool,
+		nil,   // args amqp.Table,
+	)
+
+	for range msgs {
+		fmt.Println("Received new Discovery request.")
+		publishQueueName(ch)
+	}
+}
+
+// publish sensor name to amq.fanout exchange
+func publishQueueName(ch *amqp.Channel) {
+	msg := amqp.Publishing{Body: []byte(*name)}
+	ch.Publish(
+		"amq.fanout", // exchange string
+		"",           // key string
+		false,        // mandatory bool
+		false,        // immediate bool
+		msg,
+	)
 }
