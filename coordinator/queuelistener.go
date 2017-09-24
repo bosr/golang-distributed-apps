@@ -57,7 +57,7 @@ func (ql *QueueListener) DiscoverSensors() {
 
 // ListenForNewSource does something right
 func (ql *QueueListener) ListenForNewSource() {
-	q := qutils.GetQueue("", ql.ch) // exchange will create the queue name for us
+	q := qutils.GetQueue("", ql.ch, true) // exchange will create the queue name for us
 	// Re-bind the queue to the fanout exchange
 	ql.ch.QueueBind(
 		q.Name,       // name string
